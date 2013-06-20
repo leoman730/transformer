@@ -1,49 +1,24 @@
-// Reference http://stackoverflow.com/questions/1176668/how-to-use-yql-to-retrieve-web-results
-function YQLQuery(query, callback) {
-    this.query = query;
-    this.callback = callback || function(){};
-    this.fetch = function() {
-
-        if (!this.query || !this.callback) {
-            throw new Error('YQLQuery.fetch(): Parameters may be undefined');
-        }
-
-        var scriptEl = document.createElement('script'),
-            uid = 'yql' + +new Date(),
-            encodedQuery = encodeURIComponent(this.query.toLowerCase()),
-            instance = this;
-
-        YQLQuery[uid] = function(json) {
-            instance.callback(json);
-            delete YQLQuery[uid];
-            document.body.removeChild(scriptEl);
-        };
-
-        scriptEl.src = 'http://query.yahooapis.com/v1/public/yql?q='
-                     + encodedQuery + '&format=json&callback=YQLQuery.' + uid; 
-        document.body.appendChild(scriptEl);
-
-    };
-};
-
-
 function DomCollector() {
-
 	return {
 		init: function() {
 			this.contentObj = {};
-		},
-		getRemoteContents: function(remoteConfig) {
-			var i = 0, length = remoteConfig.length;
-			
-			for (i; i < length; i++) {
-				this.getElementContent(remoteConfig[i]);
-			}
-			
-			return this.contentObj;
+			this.callbackCounter = 0; // use this to keep track of callback call
 		},
 
-		getElementContent: function( conf ) {
+		getRemoteContents: function(remoteConfig, callback) {
+			var i = 0, length = remoteConfig.length;
+
+			this.callbackCounter = remoteConfig.length;
+			
+			for (i; i < length; i++) {
+				this.getElementContent(remoteConfig[i], callback);
+			}
+
+		},
+
+		getElementContent: function( conf, callback ) {
+			var domcollector = this;
+
 			// Construct your query:
 			var query = "select * from html where (url='" + conf.url + "') and xpath='" + conf.xpath + "' ";
 
@@ -71,62 +46,64 @@ function DomCollector() {
 					data = match[0];
 					data = data.replace(/<!--[\s\S]*?-->/gi, '');
 
-			
-					var obj = $('body').append('<div id="remote" style="display:none;">'+data+'</div>');
 
-					console.log(obj.find('title').text());
+					
+					var obj = $('<div class="remote_data" style="display:none;">'+data+'</div>');
+//					$('body').append(obj);
 
-            		// console.log(xml);
-            		// console.log($(xml)[2].innerHTML);
-            		// console.log($(xml).find('results').find('head title').text());
 
+					var content = '';
+					$.each(obj.find(conf.selector), function(index){
+						 content +=  '<p>' + $(this).html() + '</p>';
+					});
+					
+					domcollector.contentObj[conf.key] = content;
+					
+					// domcollector.contentObj[conf.key] = obj.find(conf.selector);
+					
+
+					domcollector.callbackCounter--;
+					
+					if (domcollector.callbackCounter === 0) {
+						$('.remote_data').remove();
+						callback();
+					} 
             	}
             });
-
-
-
-
-			// var that = this;
-			// // Define your callback:
-			// var callback = function(data) {
-			// 	var last = conf.xpath.split('/').slice(-1)[0];
-			// 	console.log(data.query.results);
-			//     //var post = data.query.results.item;
-			//     that.contentObj[conf.key] = data.query.results[last].content.trim();
-			    
-			// };
-
-			// // Instantiate with the query:
-			// var firstFeedItem = new YQLQuery(query, callback);
-
-			// // If you're ready then go:
-			// firstFeedItem.fetch(); // Go!!
-
 		}
 	}
 };
 
 $(document).ready(function(){
 	
-	var domCollector = new DomCollector();
+	domCollector = new DomCollector();
 	
 	domCollector.init();
-	// domCollector.getElement('http://elab.io', '//div[@id="container"]');
-	// domCollector.getElement('http://oit.scps.nyu.edu/~sultans/javascript/', '/html/body/h2');
+// /html/body/table[2]/tbody/tr[1]/td[2]/a[1]
+// /html/body/table[2]/tbody/tr[1]/td[1]/b
 
 	domCollector.getRemoteContents([
-		// {'key': 'title', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '/html/body/h2' },
-		// {'key': 'time', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '/html/body/h2/font' },
-		// {'key': 'elab', 'url': 'http://elab.io', 'xpath': '//div[@id=\"container\"]' },
-		{'key': 'blog', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'head title' },
-		// {'key': 'yahoo', 'url': 'http://yahoo.com', 'xpath': '//html', 'selector': 'head title' },
-		// {'key': 'google', 'url': 'http://google.com', 'xpath': '//html', 'selector': 'head title' },
-		// {'key': 'nyulaw', 'url': 'http://law.nyu.edu', 'xpath': '//html', 'selector': 'head title' },
-		]);
-	window.setTimeout(
-		function(){
+		{'key': 'title', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'title' },
+		{'key': 'instructor', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(1) strong' },
+		{'key': 'email', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) a:eq(0)' },
+		{'key': 'course number', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'h2' },
+		{'key': 'description', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'p:eq(2), p:eq(3), p:eq(4), ul:eq(0)' },
+		// {'key': 'yahoo', 'url': 'http://yahoo.com/', 'xpath': '//html', 'selector': 'title' },
+		// {'key': 'blog1', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'title' },
+		// {'key': 'blog2', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'title' },
+		// {'key': 'blog3', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'title' },
+
+		], getRemoteContentsCallback);
+
+
+	function getRemoteContentsCallback() {
 			console.log(domCollector.contentObj);
-		}, 1000
-	);
+
+			$.each(domCollector.contentObj, function(key, val){
+				$('body').append('<h3>' + key + ':</h3>');
+				$('body').append('<p>' + val + '</p>');
+			});
+
+	}
 	
 });
