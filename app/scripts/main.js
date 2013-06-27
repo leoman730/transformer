@@ -49,11 +49,13 @@ function DomCollector() {
 
 					
 					var obj = $('<div class="remote_data" style="display:none;">'+data+'</div>');
-//					$('body').append(obj);
+
+					// $('body').append(obj);
 
 
 					var content = '';
 					$.each(obj.find(conf.selector), function(index){
+						console.log($(this));
 						 content +=  '<p>' + $(this).html() + '</p>';
 					});
 					
@@ -81,6 +83,9 @@ $(document).ready(function(){
 	domCollector.init();
 // /html/body/table[2]/tbody/tr[1]/td[2]/a[1]
 // /html/body/table[2]/tbody/tr[1]/td[1]/b
+// /html/body/p[15]/table/tbody/tr[2]/td[2]
+// /html/body/p[15]/table/tbody/tr[1]/td[3]
+
 
 	domCollector.getRemoteContents([
 		{'key': 'title', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'title' },
@@ -88,6 +93,16 @@ $(document).ready(function(){
 		{'key': 'email', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) a:eq(0)' },
 		{'key': 'course number', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'h2' },
 		{'key': 'description', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'p:eq(2), p:eq(3), p:eq(4), ul:eq(0)' },
+		{'key': 'week1', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(4) td:eq(1)' },
+		{'key': 'week2', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(7) td:eq(1)' },
+		{'key': 'week3', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(10) td:eq(1)' },
+		{'key': 'week4', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(13) td:eq(1)' },
+		{'key': 'week5', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(16) td:eq(1)' },
+		{'key': 'week6', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(19) td:eq(1)' },
+		{'key': 'week7', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(22) td:eq(1)' },
+		{'key': 'week8', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(25) td:eq(1)' },
+		{'key': 'week9', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(28) td:eq(1)' },
+		{'key': 'week10', 'url': 'http://oit.scps.nyu.edu/~sultans/javascript/', 'xpath': '//html', 'selector': 'table:eq(1) tr:eq(31) td:eq(1)' }
 		// {'key': 'yahoo', 'url': 'http://yahoo.com/', 'xpath': '//html', 'selector': 'title' },
 		// {'key': 'blog1', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'title' },
 		// {'key': 'blog2', 'url': 'http://elab.io', 'xpath': '//html', 'selector': 'title' },
